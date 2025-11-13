@@ -123,7 +123,6 @@ const HelperModal = ({ helper, onClose, onAccept }) => {
             </span>
           </div>
 
-          {/* Accept Button */}
           {helper.capability === "capable" && helper.status === "pending" && (
             <button
               onClick={() => onAccept(helper.id)}
