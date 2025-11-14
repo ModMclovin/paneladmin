@@ -3,12 +3,12 @@
   width: 100%;
 }
 
-/* Smooth transitions */
+
 * {
   transition: all 0.3s ease;
 }
 
-/* Button animations */
+
 button {
   position: relative;
   overflow: hidden;
@@ -29,7 +29,7 @@ button:hover::before {
   left: 100%;
 }
 
-/* Input focus effects */
+
 input:focus,
 textarea:focus,
 select:focus {
@@ -37,7 +37,7 @@ select:focus {
   transform: translateY(-2px);
 }
 
-/* Card hover effects */
+
 .helper-card {
   transition: all 0.3s ease;
   position: relative;
@@ -48,7 +48,7 @@ select:focus {
   box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15) !important;
 }
 
-/* Gradient backgrounds */
+
 .gradient-blue {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
@@ -57,7 +57,6 @@ select:focus {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
 }
 
-/* Animation for modals */
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -73,7 +72,7 @@ select:focus {
   animation: slideIn 0.3s ease;
 }
 
-/* Smooth page transitions */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -87,7 +86,7 @@ select:focus {
   animation: fadeIn 0.5s ease;
 }
 
-/* Stat card pulse effect */
+
 .stat-card {
   position: relative;
   overflow: hidden;
@@ -119,7 +118,7 @@ select:focus {
   }
 }
 
-/* Badge animations */
+
 .badge {
   animation: fadeIn 0.3s ease;
   font-weight: 600;

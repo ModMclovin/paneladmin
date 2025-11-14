@@ -1,25 +1,40 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Lock } from "lucide-react";
+import axios from "axios";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
-    username: "",
+    phoneNumber: "",
     password: "",
   });
   const [loginError, setLoginError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setLoginError("");
-    if (
-      credentials.username === "admin" &&
-      credentials.password === "admin123"
-    ) {
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        "https://6819ec4d581c.ngrok-free.app/SignInUser/SpecifiedRole",
+        {
+          phoneNumber: credentials.phoneNumber,
+          password: credentials.password,
+        }
+      );
+
+      console.log("Login success:", response.data);
+
       localStorage.setItem("isAdminLoggedIn", "true");
+
       navigate("/home");
-    } else {
-      setLoginError("Invalid credentials. Use admin/admin123");
+    } catch (error) {
+      console.error("Login failed:", error);
+      setLoginError("Invalid phone number or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -31,7 +46,7 @@ const LoginPage = () => {
             <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <User className="text-white" size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">Admin Login</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Helper Login</h2>
             <p className="text-gray-600 text-sm mt-1">
               Hospital Helper Management
             </p>
@@ -46,7 +61,7 @@ const LoginPage = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Username
+                Phone Number
               </label>
               <div className="relative">
                 <User
@@ -55,13 +70,16 @@ const LoginPage = () => {
                 />
                 <input
                   type="text"
-                  value={credentials.username}
+                  value={credentials.phoneNumber}
                   onChange={(e) =>
-                    setCredentials({ ...credentials, username: e.target.value })
+                    setCredentials({
+                      ...credentials,
+                      phoneNumber: e.target.value,
+                    })
                   }
                   onKeyPress={(e) => e.key === "Enter" && handleLogin()}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter username"
+                  placeholder="Enter phone number"
                 />
               </div>
             </div>
@@ -90,14 +108,15 @@ const LoginPage = () => {
 
             <button
               onClick={handleLogin}
-              className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-medium"
+              disabled={loading}
+              className="w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-medium disabled:opacity-50"
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 mb-2">Not an admin?</p>
+            <p className="text-sm text-gray-600 mb-2">Not registered?</p>
             <button
               onClick={() => navigate("/register")}
               className="text-blue-600 hover:underline text-sm font-medium"

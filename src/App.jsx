@@ -8,14 +8,10 @@ import {
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
-
-// Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = localStorage.getItem("isAdminLoggedIn") === "true";
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
-
-// Main App Component
 function App() {
   const handleLogout = () => {
     localStorage.removeItem("isAdminLoggedIn");
