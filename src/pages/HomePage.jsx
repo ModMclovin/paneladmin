@@ -78,17 +78,38 @@ const HomePage = ({ onLogout }) => {
         );
       }
 
-      let helpersData = [];
-      if (Array.isArray(response)) {
-        helpersData = response;
-      } else if (Array.isArray(response.data)) {
-        helpersData = response.data;
-      } else if (Array.isArray(response.content)) {
-        helpersData = response.content;
-      }
+      // let helpersData = [];
+      // if (Array.isArray(response)) {
+      //   helpersData = response;
+      // } else if (Array.isArray(response.data)) {
+      //   helpersData = response.data;
+      // } else if (Array.isArray(response.content)) {
+      //   helpersData = response.content;
+      // }
 
-      setHelpers(helpersData);
-      setTotalRecords(response.totalRecords || helpersData.length || 0);
+      // setHelpers(helpersData);
+      // setTotalRecords(response.totalRecords || helpersData.length || 0);
+
+       const helpersData = response?.data?.items ?? [];
+    const totalItems = response?.data?.totalItems ?? 0;
+
+ 
+    const mappedHelpers = helpersData.map((h, index) => ({
+      id: index, 
+      name: h.userName,
+      contact: h.phoneNumber,
+      email: h.email,
+      age: h.age,
+      gender: h.gender,
+      experience: h.qualification, 
+      pricePerHour: h.pricePerHour,
+      status: h.status,
+      addedDate: h.addedDate,
+      description: h.description,
+    }));
+
+    setHelpers(mappedHelpers);
+    setTotalRecords(totalItems);
     } catch (err) {
       console.error("Error loading helpers:", err);
       setError(err.message || "Failed to load helpers");
