@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   LogOut,
   Award,
@@ -16,45 +16,120 @@ import {
   X,
 } from "lucide-react";
 
+const API_BASE_URL = "https://615177e8c4cb.ngrok-free.app";
+const fetchAPI = async (endpoint, method = "GET", body = null) => {
+  const options = {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+    },
+  };
+
+  if (body) {
+    options.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
+};
+
 const HomePage = ({ onLogout }) => {
   const [helpers, setHelpers] = useState([]);
   const [selectedHelper, setSelectedHelper] = useState(null);
   const [filter, setFilter] = useState("all");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const pageSize = 10;
+
+  const loadHelpers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const statusMap = {
+        all: null,
+        pending: "Pending",
+        approved: "Approved",
+        rejected: "Rejected",
+      };
+
+      let response;
+
+      if (filter === "all") {
+        // Get all helpers pagination
+        response = await fetchAPI(
+          `/getAllHelperProfile?pageNumber=${currentPage}&pageSize=${pageSize}`
+        );
+      } else {
+        // Get helpers by status pagination
+        const statusValue = statusMap[filter];
+        response = await fetchAPI(
+          `/getHelperProfileByStatus?status=${statusValue}&pageNumber=${currentPage}&pageSize=${pageSize}`
+        );
+      }
+
+      let helpersData = [];
+      if (Array.isArray(response)) {
+        helpersData = response;
+      } else if (Array.isArray(response.data)) {
+        helpersData = response.data;
+      } else if (Array.isArray(response.content)) {
+        helpersData = response.content;
+      }
+
+      setHelpers(helpersData);
+      setTotalRecords(response.totalRecords || helpersData.length || 0);
+    } catch (err) {
+      console.error("Error loading helpers:", err);
+      setError(err.message || "Failed to load helpers");
+      setHelpers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [filter, currentPage, pageSize]);
 
   useEffect(() => {
     loadHelpers();
-  }, []);
+  }, [loadHelpers]);
 
-  const loadHelpers = () => {
-    const stored = JSON.parse(localStorage.getItem("helpers") || "[]");
-    setHelpers(stored);
+  const handleAccept = async (helperId) => {
+    try {
+      await fetchAPI(`/acceptHelper/${helperId}`, "POST");
+
+      loadHelpers();
+      setSelectedHelper(null);
+      alert("Helper accepted successfully!");
+    } catch (err) {
+      console.error("Error accepting helper:", err);
+      alert("Failed to accept helper");
+    }
   };
-
-  const handleAccept = (helperId) => {
-    const updated = helpers.map((h) =>
-      h.id === helperId ? { ...h, status: "accepted" } : h
-    );
-    setHelpers(updated);
-    localStorage.setItem("helpers", JSON.stringify(updated));
-    setSelectedHelper(updated.find((h) => h.id === helperId));
-    alert("✅ Helper accepted successfully!");
-  };
-
-  const filteredHelpers = helpers.filter((h) => {
-    if (filter === "capable") return h.capability === "capable";
-    if (filter === "pending") return h.status === "pending";
-    if (filter === "accepted") return h.status === "accepted";
-    return true;
-  });
 
   const stats = {
-    total: helpers.length,
-    capable: helpers.filter((h) => h.capability === "capable").length,
-    pending: helpers.filter((h) => h.status === "pending").length,
-    accepted: helpers.filter((h) => h.status === "accepted").length,
+    total: totalRecords,
+    approved: Array.isArray(helpers)
+      ? helpers.filter((h) => h.status === "Approved").length
+      : 0,
+    pending: Array.isArray(helpers)
+      ? helpers.filter((h) => h.status === "Pending").length
+      : 0,
+    rejected: Array.isArray(helpers)
+      ? helpers.filter((h) => h.status === "Rejected").length
+      : 0,
   };
+
+  const totalPages = Math.ceil(totalRecords / pageSize);
+
   const menuItems = [
     { id: "home", icon: Home, label: "Dashboard" },
     { id: "helpers", icon: Users, label: "Helper Details" },
@@ -62,8 +137,21 @@ const HomePage = ({ onLogout }) => {
     { id: "profile", icon: User, label: "Profile" },
     { id: "settings", icon: Settings, label: "Settings" },
   ];
+
+  const filterOptions = [
+    { id: "all", label: "All" },
+    { id: "pending", label: "Pending" },
+    { id: "approved", label: "Approved" },
+    { id: "rejected", label: "Rejected" },
+  ];
+
+  const isHelperPendingApproval = (helper) => {
+    return helper.status === "Pending";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Sidebar */}
       <aside
         className={`fixed top-0 left-0 h-full bg-white shadow-xl z-50 transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -135,6 +223,7 @@ const HomePage = ({ onLogout }) => {
       )}
 
       <div className="lg:ml-64">
+        {/* Navigation Bar  */}
         <nav className="bg-white border-b border-gray-200 sticky top-0 z-30">
           <div className="px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -159,6 +248,7 @@ const HomePage = ({ onLogout }) => {
           </div>
         </nav>
 
+        {/* Main Content Yata*/}
         <div className="p-4 md:p-8">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">
@@ -169,6 +259,14 @@ const HomePage = ({ onLogout }) => {
             </p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8 text-red-700">
+              Error: {error}
+            </div>
+          )}
+
+          {/* Stats Cards Yata*/}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[
               {
@@ -178,8 +276,8 @@ const HomePage = ({ onLogout }) => {
                 color: "blue",
               },
               {
-                label: "Capable",
-                value: stats.capable,
+                label: "Approved",
+                value: stats.approved,
                 icon: CheckCircle,
                 color: "green",
               },
@@ -190,10 +288,10 @@ const HomePage = ({ onLogout }) => {
                 color: "yellow",
               },
               {
-                label: "Accepted",
-                value: stats.accepted,
-                icon: CheckCircle,
-                color: "emerald",
+                label: "Rejected",
+                value: stats.rejected,
+                icon: XCircle,
+                color: "red",
               },
             ].map((stat, idx) => {
               const Icon = stat.icon;
@@ -220,104 +318,132 @@ const HomePage = ({ onLogout }) => {
             })}
           </div>
 
+          {/* Filter Section Yata */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
               Filter Helpers
             </h3>
             <div className="flex gap-3 flex-wrap">
-              {["all", "capable", "pending", "accepted"].map((f) => (
+              {filterOptions.map((f) => (
                 <button
-                  key={f}
-                  onClick={() => setFilter(f)}
+                  key={f.id}
+                  onClick={() => {
+                    setFilter(f.id);
+                    setCurrentPage(1);
+                  }}
                   className={`px-6 py-2 rounded-lg text-sm font-medium transition-all ${
-                    filter === f
+                    filter === f.id
                       ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-200"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
-                  {f.charAt(0).toUpperCase() + f.slice(1)}
+                  {f.label}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredHelpers.map((helper) => (
-              <div
-                key={helper.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1"
-                onClick={() => setSelectedHelper(helper)}
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                    {helper.name.charAt(0)}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-800 text-lg">
-                      {helper.name}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {helper.age} years old
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-3 mb-4 pb-4 border-b border-gray-100">
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                      <Award size={16} className="text-blue-600" />
+          {/* Loading State Yata */}
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {helpers.map((helper) => (
+                  <div
+                    key={helper.id}
+                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all cursor-pointer transform hover:-translate-y-1"
+                    onClick={() => setSelectedHelper(helper)}
+                  >
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                        {helper.name?.charAt(0) || "H"}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-gray-800 text-lg">
+                          {helper.name}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {helper.age} years old
+                        </p>
+                      </div>
                     </div>
-                    <span>{helper.experience} years experience</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-600">
-                    <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
-                      <Phone size={16} className="text-indigo-600" />
+                    <div className="space-y-3 mb-4 pb-4 border-b border-gray-100">
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                          <Award size={16} className="text-blue-600" />
+                        </div>
+                        <span>{helper.experience} years experience</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center">
+                          <Phone size={16} className="text-indigo-600" />
+                        </div>
+                        <span>{helper.contact}</span>
+                      </div>
                     </div>
-                    <span>{helper.contact}</span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2 text-sm">
-                    {helper.capability === "capable" ? (
-                      <>
-                        <CheckCircle size={18} className="text-green-600" />
-                        <span className="text-green-600 font-semibold">
-                          Capable
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <XCircle size={18} className="text-red-600" />
-                        <span className="text-red-600 font-semibold">
-                          Not Capable
-                        </span>
-                      </>
+                    <div className="flex items-center justify-between mb-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          helper.status === "Approved"
+                            ? "bg-green-100 text-green-700"
+                            : helper.status === "Pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {helper.status}
+                      </span>
+                    </div>
+                    {isHelperPendingApproval(helper) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAccept(helper.id);
+                        }}
+                        className="w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all text-sm font-semibold shadow-lg shadow-green-200"
+                      >
+                        Accept Helper
+                      </button>
                     )}
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      helper.status === "accepted"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {helper.status === "accepted" ? "Accepted" : "Pending"}
-                  </span>
-                </div>
-                {helper.capability === "capable" &&
-                  helper.status === "pending" && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAccept(helper.id);
-                      }}
-                      className="w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all text-sm font-semibold shadow-lg shadow-green-200"
-                    >
-                      Accept Helper
-                    </button>
-                  )}
+                ))}
               </div>
-            ))}
-          </div>
+
+              {helpers.length === 0 && !loading && (
+                <div className="text-center py-12 text-gray-500">
+                  No helpers found
+                </div>
+              )}
+
+              {/* Pagination Yata */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-3">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-gray-700 font-semibold">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -328,7 +454,7 @@ const HomePage = ({ onLogout }) => {
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                    {selectedHelper.name.charAt(0)}
+                    {selectedHelper.name?.charAt(0) || "H"}
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-800">
@@ -364,32 +490,30 @@ const HomePage = ({ onLogout }) => {
               </div>
               <div>
                 <label className="text-sm font-semibold text-gray-600">
-                  Capability
+                  Status
                 </label>
                 <p
                   className={
-                    selectedHelper.capability === "capable"
+                    selectedHelper.status === "Approved"
                       ? "text-green-600"
+                      : selectedHelper.status === "Pending"
+                      ? "text-yellow-600"
                       : "text-red-600"
                   }
                 >
-                  {selectedHelper.capability === "capable"
-                    ? "Capable"
-                    : "Not Capable"}
+                  {selectedHelper.status}
                 </p>
               </div>
-              {selectedHelper.capability === "capable" &&
-                selectedHelper.status === "pending" && (
-                  <button
-                    onClick={() => {
-                      handleAccept(selectedHelper.id);
-                      setSelectedHelper(null);
-                    }}
-                    className="w-full mt-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold"
-                  >
-                    Accept Helper
-                  </button>
-                )}
+              {isHelperPendingApproval(selectedHelper) && (
+                <button
+                  onClick={() => {
+                    handleAccept(selectedHelper.id);
+                  }}
+                  className="w-full mt-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold"
+                >
+                  Accept Helper
+                </button>
+              )}
             </div>
           </div>
         </div>
