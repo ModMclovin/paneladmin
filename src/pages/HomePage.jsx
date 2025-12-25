@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 
-const API_BASE_URL = "https://615177e8c4cb.ngrok-free.app";
+const API_BASE_URL = "https://b63d0477cea0.ngrok-free.app";
 const fetchAPI = async (endpoint, method = "GET", body = null) => {
   const options = {
     method,
@@ -48,13 +48,11 @@ const HomePage = ({ onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   const pageSize = 10;
 
   const loadHelpers = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const statusMap = {
         all: null,
@@ -78,41 +76,27 @@ const HomePage = ({ onLogout }) => {
         );
       }
 
-      // let helpersData = [];
-      // if (Array.isArray(response)) {
-      //   helpersData = response;
-      // } else if (Array.isArray(response.data)) {
-      //   helpersData = response.data;
-      // } else if (Array.isArray(response.content)) {
-      //   helpersData = response.content;
-      // }
+      const helpersData = response?.data?.items ?? [];
+      const totalItems = response?.data?.totalItems ?? 0;
 
-      // setHelpers(helpersData);
-      // setTotalRecords(response.totalRecords || helpersData.length || 0);
+      const mappedHelpers = helpersData.map((h, index) => ({
+        id: index,
+        name: h.userName,
+        contact: h.phoneNumber,
+        email: h.email,
+        age: h.age,
+        gender: h.gender,
+        experience: h.qualification,
+        pricePerHour: h.pricePerHour,
+        status: h.status,
+        addedDate: h.addedDate,
+        description: h.description,
+      }));
 
-       const helpersData = response?.data?.items ?? [];
-    const totalItems = response?.data?.totalItems ?? 0;
-
- 
-    const mappedHelpers = helpersData.map((h, index) => ({
-      id: index, 
-      name: h.userName,
-      contact: h.phoneNumber,
-      email: h.email,
-      age: h.age,
-      gender: h.gender,
-      experience: h.qualification, 
-      pricePerHour: h.pricePerHour,
-      status: h.status,
-      addedDate: h.addedDate,
-      description: h.description,
-    }));
-
-    setHelpers(mappedHelpers);
-    setTotalRecords(totalItems);
+      setHelpers(mappedHelpers);
+      setTotalRecords(totalItems);
     } catch (err) {
       console.error("Error loading helpers:", err);
-      setError(err.message || "Failed to load helpers");
       setHelpers([]);
     } finally {
       setLoading(false);
@@ -125,14 +109,33 @@ const HomePage = ({ onLogout }) => {
 
   const handleAccept = async (helperId) => {
     try {
-      await fetchAPI(`/acceptHelper/${helperId}`, "POST");
-
+      await fetchAPI(`/updateHelperProfileStatus`, "POST", {
+        userName: helpers[helperId]?.name,
+        phoneNumber: helpers[helperId]?.contact,
+        updatedStatus: "Approved",
+      });
       loadHelpers();
       setSelectedHelper(null);
       alert("Helper accepted successfully!");
     } catch (err) {
       console.error("Error accepting helper:", err);
       alert("Failed to accept helper");
+    }
+  };
+
+  const handleReject = async (helperId) => {
+    try {
+      await fetchAPI(`/updateHelperProfileStatus`, "POST", {
+        userName: helpers[helperId]?.name,
+        phoneNumber: helpers[helperId]?.contact,
+        updatedStatus: "Rejected",
+      });
+      loadHelpers();
+      setSelectedHelper(null);
+      alert("Helper rejected successfully!");
+    } catch (err) {
+      console.error("Error rejecting helper:", err);
+      alert("Failed to reject helper");
     }
   };
 
@@ -280,13 +283,6 @@ const HomePage = ({ onLogout }) => {
             </p>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8 text-red-700">
-              Error: {error}
-            </div>
-          )}
-
           {/* Stats Cards Yata*/}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[
@@ -419,15 +415,26 @@ const HomePage = ({ onLogout }) => {
                       </span>
                     </div>
                     {isHelperPendingApproval(helper) && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleAccept(helper.id);
-                        }}
-                        className="w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all text-sm font-semibold shadow-lg shadow-green-200"
-                      >
-                        Accept Helper
-                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleAccept(helper.id);
+                          }}
+                          className="flex-1 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all text-sm font-semibold shadow-lg shadow-green-200"
+                        >
+                          Accept Helper
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReject(helper.id);
+                          }}
+                          className="flex-1 py-2 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 transition-all text-sm font-semibold shadow-lg shadow-red-200"
+                        >
+                          Reject Helper
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -526,14 +533,24 @@ const HomePage = ({ onLogout }) => {
                 </p>
               </div>
               {isHelperPendingApproval(selectedHelper) && (
-                <button
-                  onClick={() => {
-                    handleAccept(selectedHelper.id);
-                  }}
-                  className="w-full mt-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold"
-                >
-                  Accept Helper
-                </button>
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => {
+                      handleAccept(selectedHelper.id);
+                    }}
+                    className="flex-1 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all font-semibold"
+                  >
+                    Accept Helper
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleReject(selectedHelper.id);
+                    }}
+                    className="flex-1 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-lg hover:from-red-700 hover:to-rose-700 transition-all font-semibold"
+                  >
+                    Reject Helper
+                  </button>
+                </div>
               )}
             </div>
           </div>
