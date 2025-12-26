@@ -9,6 +9,7 @@ import {
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
+import HospitalAdmin from "./pages/HospitalAdmin"; // Add this import
 
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = localStorage.getItem("isAdminLoggedIn") === "true";
@@ -29,6 +30,8 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
 
         <Route path="/home" element={<HomePage onLogout={handleLogout} />} />
+
+        <Route path="/hospital" element={<HospitalAdmin />} />
 
         <Route path="*" element={<Navigate to="/register" replace />} />
       </Routes>
