@@ -308,14 +308,6 @@ function ReceptionDashboard({ onLogout }) {
               </div>
             </>
           )}
-
-          {activeTab !== "view" && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
-              <p className="text-gray-600 font-medium">
-                Coming soon - {menuItems.find((m) => m.id === activeTab)?.label}
-              </p>
-            </div>
-          )}
         </div>
       </div>
 
