@@ -12,8 +12,7 @@ import {
 } from "lucide-react";
 
 export default function HospitalAdminDashboard({ onLogout }) {
-  const NGROK_API_URL = "YOUR_NGROK_API_URL_HERE"; // Replace with your ngrok URL
-
+  const NGROK_API_URL = "URL yata";
   const [doctors, setDoctors] = useState([
     {
       id: 1,
