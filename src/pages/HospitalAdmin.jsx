@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState , useEffect} from "react";
+import axios from "axios";
 import {
   User,
   Search,
@@ -12,33 +13,40 @@ import {
 } from "lucide-react";
 
 export default function HospitalAdminDashboard({ onLogout }) {
-  const NGROK_API_URL = "URL yata";
-  const [doctors, setDoctors] = useState([
-    {
-      id: 1,
-      name: "Dr. Samarat",
-      specialty: "Cardiology",
-      email: "samrat@gmail.com",
-      available: true,
-      schedule: { date: "2025-12-25", startTime: "09:00", endTime: "17:00" },
-    },
-    {
-      id: 2,
-      name: "Dr. Rabina",
-      specialty: "Pediatrics",
-      email: "rabina@gmail.com",
-      available: false,
-      schedule: { date: "2025-12-25", startTime: "10:00", endTime: "14:00" },
-    },
-    {
-      id: 3,
-      name: "Dr. Sita",
-      specialty: "Orthopedics",
-      email: "sita@gmail.com",
-      available: true,
-      schedule: { date: "2025-12-25", startTime: "08:00", endTime: "16:00" },
-    },
-  ]);
+   const NGROK_API_URL = "https://localhost:7252/api/DoctorSchedule/getAllDoctorSchedules";
+  const TENANT_ID = "2bbba50d-3607-4ef9-8180-ba4408c4f3d0";
+
+  const [doctors, setDoctors] = useState([]);
+const [error, setError] = useState("");
+
+const [errorMessage, setErrorMessage] = useState("");
+const [successMessage, setSuccessMessage] = useState("");
+  // const [doctors, setDoctors] = useState([
+  //   {
+  //     id: 1,
+  //     name: "Dr. Samarat",
+  //     specialty: "Cardiology",
+  //     email: "samrat@gmail.com",
+  //     available: true,
+  //     schedule: { date: "2025-12-25", startTime: "09:00", endTime: "17:00" },
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Dr. Rabina",
+  //     specialty: "Pediatrics",
+  //     email: "rabina@gmail.com",
+  //     available: false,
+  //     schedule: { date: "2025-12-25", startTime: "10:00", endTime: "14:00" },
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Dr. Sita",
+  //     specialty: "Orthopedics",
+  //     email: "sita@gmail.com",
+  //     available: true,
+  //     schedule: { date: "2025-12-25", startTime: "08:00", endTime: "16:00" },
+  //   },
+  // ]);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -46,12 +54,63 @@ export default function HospitalAdminDashboard({ onLogout }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     doctorEmail: "",
-    doctorName: "",
-    specialty: "",
+    doctorPhoneNumber: "",
     date: "",
     startTime: "",
     endTime: "",
   });
+
+
+useEffect(() => {
+    const fetchDoctors = async () => {
+      debugger;
+      try {
+        const response = await axios.get(NGROK_API_URL, {
+          headers: {
+            "X-Tenant-Id": TENANT_ID,
+            accept: "*/*",
+          },
+        });
+
+       if (response.status === 200 && response.data.isSuccess) {
+          const mappedDoctors = response.data.data.map((doc) => ({
+            id: doc.id || doc.doctorName, // fallback if no unique id
+            name: doc.doctorName,
+            specialty: doc.specialization,
+            email: doc.email, // assuming doctorName is email
+            available: doc.schedules?.some((s) => s.isDoctorAvailable && s.isEffective) ?? false,
+            schedule: doc.schedules?.[0] // you can map more if needed
+              ? {
+                  date: doc.schedules[0].scheduleDate,
+                  startTime: doc.schedules[0].startTime,
+                  endTime: doc.schedules[0].endTime,
+                }
+              : null,
+            departments: doc.departments || [],
+          }));
+          setDoctors(mappedDoctors);
+        } else {
+          console.error("Unexpected status code:", response.status);
+          setError(`Failed to fetch doctor schedules. Status code: ${response.status}`);
+        }
+
+
+      } catch (err) {
+        console.error("Failed to fetch doctors:", err);
+        setError("Failed to fetch doctor schedules");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []); 
+
+
+
+
+
+
 
   const filteredDoctors = doctors.filter(
     (doc) =>
@@ -63,8 +122,7 @@ export default function HospitalAdminDashboard({ onLogout }) {
   const handleAddClick = () => {
     setFormData({
       doctorEmail: "",
-      doctorName: "",
-      specialty: "",
+      doctorPhoneNumber: "",
       date: "",
       startTime: "",
       endTime: "",
@@ -87,89 +145,132 @@ export default function HospitalAdminDashboard({ onLogout }) {
   };
 
   const handleSave = async () => {
+    debugger;
+      console.log("Handle Save Clicked");
     if (
       !formData.doctorEmail ||
-      !formData.doctorName ||
-      !formData.specialty ||
+      !formData.doctorPhoneNumber ||
       !formData.date ||
       !formData.startTime ||
       !formData.endTime
     ) {
-      alert("Please fill in all fields");
+    
+       setErrorMessage("Please fill in all fields");
       return;
     }
+const payload = {
+    doctorEmail: formData.doctorEmail,
+    doctorPhoneNumber: formData.doctorPhoneNumber,
+    doctorSchedule: {
+      scheduleDate: new Date(formData.date).toISOString(),
+      startTime: formData.startTime,
+      endTime: formData.endTime,
+      isDoctorAvailable: true
+    }
+  };
+try {
+  debugger;
+    const response = await fetch(
+      "https://localhost:7252/api/DoctorSchedule/addDoctorSchedule",
+      {
+        method: "POST",
+        headers: {
+          "Accept": "*/*",
+          "Content-Type": "application/json",
+          "X-Tenant-Id": "2bbba50d-3607-4ef9-8180-ba4408c4f3d0"
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+     if (response.status != 200) {
+      const errorData = await response.json();
+      setErrorMessage(`Error: ${response.data.message || 'Failed to add schedule'}`);
+      return;
+    }
+     const data = await response.json();
+
+    setSuccessMessage(`${data.message || 'Schedule added successfully!'}`);
+    // const data = await response.json();
+    // setSuccessMessage("Schedule added successfully!");
+    // console.log("API Response:", data);
+  } catch (error) {
+    setErrorMessage("Something went wrong. Please try again.");
+    console.error("Fetch error:", error);
+  }
+
 
     setLoading(true);
 
-    try {
-      const payload = {
-        doctorEmail: formData.doctorEmail,
-        doctorSchedules: [
-          {
-            scheduleDate: formData.date + "T" + formData.startTime + ":00.000Z",
-            startTime: formData.startTime,
-            endTime: formData.endTime,
-          },
-        ],
-      };
+    // try {
+    //   const payload = {
+    //     doctorEmail: formData.doctorEmail,
+    //     doctorSchedules: [
+    //       {
+    //         scheduleDate: formData.date + "T" + formData.startTime + ":00.000Z",
+    //         startTime: formData.startTime,
+    //         endTime: formData.endTime,
+    //       },
+    //     ],
+    //   };
 
-      const response = await fetch(`${NGROK_API_URL}/addDoctorSchedule`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+    //   const response = await fetch(`${NGROK_API_URL}/addDoctorSchedule`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(payload),
+    //   });
 
-      if (!response.ok) {
-        throw new Error("Failed to save doctor schedule");
-      }
+    //   if (!response.ok) {
+    //     throw new Error("Failed to save doctor schedule");
+    //   }
 
-      const data = await response.json();
-      console.log("Doctor schedule saved:", data);
+    //   const data = await response.json();
+    //   console.log("Doctor schedule saved:", data);
 
-      if (editingId) {
-        setDoctors(
-          doctors.map((doc) =>
-            doc.id === editingId
-              ? {
-                  ...doc,
-                  name: formData.doctorName,
-                  email: formData.doctorEmail,
-                  specialty: formData.specialty,
-                  schedule: {
-                    date: formData.date,
-                    startTime: formData.startTime,
-                    endTime: formData.endTime,
-                  },
-                }
-              : doc
-          )
-        );
-      } else {
-        const newDoctor = {
-          id: Math.max(...doctors.map((d) => d.id), 0) + 1,
-          name: formData.doctorName,
-          email: formData.doctorEmail,
-          specialty: formData.specialty,
-          available: true,
-          schedule: {
-            date: formData.date,
-            startTime: formData.startTime,
-            endTime: formData.endTime,
-          },
-        };
-        setDoctors([...doctors, newDoctor]);
-      }
+    //   if (editingId) {
+    //     setDoctors(
+    //       doctors.map((doc) =>
+    //         doc.id === editingId
+    //           ? {
+    //               ...doc,
+    //               name: formData.doctorName,
+    //               email: formData.doctorEmail,
+    //               specialty: formData.specialty,
+    //               schedule: {
+    //                 date: formData.date,
+    //                 startTime: formData.startTime,
+    //                 endTime: formData.endTime,
+    //               },
+    //             }
+    //           : doc
+    //       )
+    //     );
+    //   } else {
+    //     const newDoctor = {
+    //       id: Math.max(...doctors.map((d) => d.id), 0) + 1,
+    //       name: formData.doctorName,
+    //       email: formData.doctorEmail,
+    //       specialty: formData.specialty,
+    //       available: true,
+    //       schedule: {
+    //         date: formData.date,
+    //         startTime: formData.startTime,
+    //         endTime: formData.endTime,
+    //       },
+    //     };
+    //     setDoctors([...doctors, newDoctor]);
+    //   }
 
-      setShowForm(false);
-      alert("Doctor schedule saved successfully!");
-    } catch (error) {
-      console.error("Error:", error);
-      alert("Error saving doctor schedule: " + error.message);
-    } finally {
-      setLoading(false);
-    }
+    //   setShowForm(false);
+    //   alert("Doctor schedule saved successfully!");
+    // } catch (error) {
+    //   console.error("Error:", error);
+    //   alert("Error saving doctor schedule: " + error.message);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const handleDelete = (id) => {
@@ -281,20 +382,20 @@ export default function HospitalAdminDashboard({ onLogout }) {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Doctor Name *
+                   PhoneNumber*
                   </label>
                   <input
                     type="text"
-                    value={formData.doctorName}
+                    value={formData.doctorPhoneNumber}
                     onChange={(e) =>
-                      setFormData({ ...formData, doctorName: e.target.value })
+                      setFormData({ ...formData, doctorPhoneNumber: e.target.value })
                     }
-                    placeholder="e.g., Dr. Rajesh Kumar"
+                    placeholder="e.g., 9876543210"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
 
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Specialty *
                   </label>
@@ -307,11 +408,11 @@ export default function HospitalAdminDashboard({ onLogout }) {
                     placeholder="e.g., Cardiology"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                </div>
+                </div> */}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Date *
+                   Schedule Date *
                   </label>
                   <input
                     type="date"
@@ -354,6 +455,13 @@ export default function HospitalAdminDashboard({ onLogout }) {
               </div>
 
               <div className="flex gap-3 mt-6">
+                {errorMessage && (
+                <div className="text-red-500 font-medium">{errorMessage}</div>
+              )}
+              {successMessage && (
+                <div className="text-green-500 font-medium">{successMessage}</div>
+              )}
+
                 <button
                   onClick={() => setShowForm(false)}
                   disabled={loading}

@@ -26,11 +26,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/register" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        <Route path="/home" element={<HomePage onLogout={handleLogout} />} />
+        <Route path="/superadmin" element={<HomePage onLogout={handleLogout} />} />
 
         <Route path="/hospital" element={<HospitalAdmin />} />
 
@@ -39,7 +39,7 @@ function App() {
           element={<Reception onLogout={handleLogout} />}
         />
 
-        <Route path="*" element={<Navigate to="/register" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

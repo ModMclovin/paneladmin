@@ -12,13 +12,45 @@ const LoginPage = () => {
   const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
 
+const navigateByRole = (role) => {
+  debugger;
+  switch (role) {
+    case "SuperAdmin":
+      navigate("/superadmin");
+      break;
+    case "HospitalAdmin":
+      navigate("/hospital");
+      break;
+      case "Reception":
+      navigate("/reception");
+      break;
+    // case "Admin":
+    //   navigate("/admin/dashboard");
+    //   break;
+
+    // case "Helper":
+    //   navigate("/helper/home");
+    //   break;
+
+    // case "User":
+    //   navigate("/user/home");
+    //   break;
+
+    default:
+      navigate("/unauthorized");
+      break;
+  }
+};
+
+
+
   const handleLogin = async () => {
     setLoginError("");
     setLoading(true);
 
     try {
       const response = await axios.post(
-        "https://b63d0477cea0.ngrok-free.app/SignInUser/SpecifiedRole",
+        "https://localhost:7252/SignInUser/SpecifiedRole",
         {
           phoneNumber: credentials.phoneNumber,
           password: credentials.password,
@@ -28,8 +60,9 @@ const LoginPage = () => {
       console.log("Login success:", response.data);
 
       localStorage.setItem("isAdminLoggedIn", "true");
+      console.log("User role:", response.data.data.role);
+      navigateByRole(response.data.data.role);
 
-      navigate("/home");
     } catch (error) {
       console.error("Login failed:", error);
       setLoginError("Invalid phone number or password.");
@@ -46,7 +79,7 @@ const LoginPage = () => {
             <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <User className="text-white" size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">Helper Login</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Super Admin Login</h2>
             <p className="text-gray-600 text-sm mt-1">
               Hospital Helper Management
             </p>

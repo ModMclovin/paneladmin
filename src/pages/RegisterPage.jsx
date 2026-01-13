@@ -18,7 +18,7 @@ const RegisterPage = () => {
   const [error, setError] = useState("");
 
   const API_BASE =
-    "https://615177e8c4cb.ngrok-free.app/registerUser/SpecifiedRole";
+    "https://localhost:7252/registerUser/SpecifiedRole";
 
   const handleRegister = async () => {
     // Validation

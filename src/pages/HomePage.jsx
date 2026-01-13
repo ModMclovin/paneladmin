@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 
-const API_BASE_URL = "https://b63d0477cea0.ngrok-free.app";
+const API_BASE_URL = "https://localhost:7252";
 const fetchAPI = async (endpoint, method = "GET", body = null) => {
   const options = {
     method,
