@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 export default function HospitalAdminDashboard({ onLogout }) {
-   const NGROK_API_URL = "https://localhost:7252/api/DoctorSchedule/getAllDoctorSchedules";
+   const NGROK_API_URL = "https://localhost:7252/getAllDoctorSchedules";
   const TENANT_ID = "2bbba50d-3607-4ef9-8180-ba4408c4f3d0";
 
   const [doctors, setDoctors] = useState([]);
@@ -171,7 +171,7 @@ const payload = {
 try {
   debugger;
     const response = await fetch(
-      "https://localhost:7252/api/DoctorSchedule/addDoctorSchedule",
+      "https://localhost:7252/addDoctorSchedule",
       {
         method: "POST",
         headers: {
@@ -191,9 +191,7 @@ try {
      const data = await response.json();
 
     setSuccessMessage(`${data.message || 'Schedule added successfully!'}`);
-    // const data = await response.json();
-    // setSuccessMessage("Schedule added successfully!");
-    // console.log("API Response:", data);
+    setShowForm(false);
   } catch (error) {
     setErrorMessage("Something went wrong. Please try again.");
     console.error("Fetch error:", error);
@@ -202,75 +200,6 @@ try {
 
     setLoading(true);
 
-    // try {
-    //   const payload = {
-    //     doctorEmail: formData.doctorEmail,
-    //     doctorSchedules: [
-    //       {
-    //         scheduleDate: formData.date + "T" + formData.startTime + ":00.000Z",
-    //         startTime: formData.startTime,
-    //         endTime: formData.endTime,
-    //       },
-    //     ],
-    //   };
-
-    //   const response = await fetch(`${NGROK_API_URL}/addDoctorSchedule`, {
-    //     method: "POST",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(payload),
-    //   });
-
-    //   if (!response.ok) {
-    //     throw new Error("Failed to save doctor schedule");
-    //   }
-
-    //   const data = await response.json();
-    //   console.log("Doctor schedule saved:", data);
-
-    //   if (editingId) {
-    //     setDoctors(
-    //       doctors.map((doc) =>
-    //         doc.id === editingId
-    //           ? {
-    //               ...doc,
-    //               name: formData.doctorName,
-    //               email: formData.doctorEmail,
-    //               specialty: formData.specialty,
-    //               schedule: {
-    //                 date: formData.date,
-    //                 startTime: formData.startTime,
-    //                 endTime: formData.endTime,
-    //               },
-    //             }
-    //           : doc
-    //       )
-    //     );
-    //   } else {
-    //     const newDoctor = {
-    //       id: Math.max(...doctors.map((d) => d.id), 0) + 1,
-    //       name: formData.doctorName,
-    //       email: formData.doctorEmail,
-    //       specialty: formData.specialty,
-    //       available: true,
-    //       schedule: {
-    //         date: formData.date,
-    //         startTime: formData.startTime,
-    //         endTime: formData.endTime,
-    //       },
-    //     };
-    //     setDoctors([...doctors, newDoctor]);
-    //   }
-
-    //   setShowForm(false);
-    //   alert("Doctor schedule saved successfully!");
-    // } catch (error) {
-    //   console.error("Error:", error);
-    //   alert("Error saving doctor schedule: " + error.message);
-    // } finally {
-    //   setLoading(false);
-    // }
   };
 
   const handleDelete = (id) => {
