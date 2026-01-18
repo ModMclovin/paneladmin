@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import HospitalAdmin from "./pages/HospitalAdmin";
 import Reception from "./pages/Reception";
+import SuperLogin from "./pages/SuperLogin";
 
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = localStorage.getItem("isAdminLoggedIn") === "true";
@@ -30,9 +31,13 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
 
-        <Route path="/superadmin" element={<HomePage onLogout={handleLogout} />} />
+        <Route
+          path="/superadmin"
+          element={<HomePage onLogout={handleLogout} />}
+        />
 
         <Route path="/hospital" element={<HospitalAdmin />} />
+        <Route path="/superlogin" element={<SuperLogin />} />
 
         <Route
           path="/reception"
