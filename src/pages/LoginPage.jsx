@@ -12,37 +12,35 @@ const LoginPage = () => {
   const [loginError, setLoginError] = useState("");
   const [loading, setLoading] = useState(false);
 
-const navigateByRole = (role) => {
-  debugger;
-  switch (role) {
-    case "SuperAdmin":
-      navigate("/superadmin");
-      break;
-    case "HospitalAdmin":
-      navigate("/hospital");
-      break;
+  const navigateByRole = (role) => {
+    //debugger;
+    switch (role) {
+      case "SuperAdmin":
+        navigate("/superadmin");
+        break;
+      case "HospitalAdmin":
+        navigate("/hospital");
+        break;
       case "Reception":
-      navigate("/reception");
-      break;
-    // case "Admin":
-    //   navigate("/admin/dashboard");
-    //   break;
+        navigate("/reception");
+        break;
+      // case "Admin":
+      //   navigate("/admin/dashboard");
+      //   break;
 
-    // case "Helper":
-    //   navigate("/helper/home");
-    //   break;
+      // case "Helper":
+      //   navigate("/helper/home");
+      //   break;
 
-    // case "User":
-    //   navigate("/user/home");
-    //   break;
+      // case "User":
+      //   navigate("/user/home");
+      //   break;
 
-    default:
-      navigate("/unauthorized");
-      break;
-  }
-};
-
-
+      default:
+        navigate("/unauthorized");
+        break;
+    }
+  };
 
   const handleLogin = async () => {
     setLoginError("");
@@ -54,7 +52,7 @@ const navigateByRole = (role) => {
         {
           phoneNumber: credentials.phoneNumber,
           password: credentials.password,
-        }
+        },
       );
 
       console.log("Login success:", response.data);
@@ -62,7 +60,6 @@ const navigateByRole = (role) => {
       localStorage.setItem("isAdminLoggedIn", "true");
       console.log("User role:", response.data.data.role);
       navigateByRole(response.data.data.role);
-
     } catch (error) {
       console.error("Login failed:", error);
       setLoginError("Invalid phone number or password.");
@@ -79,7 +76,9 @@ const navigateByRole = (role) => {
             <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
               <User className="text-white" size={32} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">Super Admin Login</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              Super Admin Login
+            </h2>
             <p className="text-gray-600 text-sm mt-1">
               Hospital Helper Management
             </p>
@@ -149,12 +148,12 @@ const navigateByRole = (role) => {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600 mb-2">Not registered?</p>
+            <p className="text-sm text-gray-600 mb-2">Not a super admin?</p>
             <button
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/login")}
               className="text-blue-600 hover:underline text-sm font-medium"
             >
-              Register as Helper
+              Login as others!{" "}
             </button>
           </div>
         </div>
