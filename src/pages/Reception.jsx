@@ -10,6 +10,8 @@ import {
   BarChart3,
   User,
   Settings,
+  UserPlus,
+  Check,
 } from "lucide-react";
 
 const initialPatients = [
@@ -50,12 +52,54 @@ const initialPatients = [
   },
 ];
 
+// Mock data for available helpers
+const mockHelpers = [
+  {
+    id: 1,
+    name: "Hari Prasad",
+    phone: "9841000001",
+    experience: "2 years",
+    status: "available",
+  },
+  {
+    id: 2,
+    name: "Deepak Kumar",
+    phone: "9841000002",
+    experience: "3 years",
+    status: "available",
+  },
+  {
+    id: 3,
+    name: "Priya Singh",
+    phone: "9841000003",
+    experience: "1.5 years",
+    status: "busy",
+  },
+  {
+    id: 4,
+    name: "Rajesh Patel",
+    phone: "9841000004",
+    experience: "4 years",
+    status: "available",
+  },
+  {
+    id: 5,
+    name: "Anita Sharma",
+    phone: "9841000005",
+    experience: "2.5 years",
+    status: "available",
+  },
+];
+
 function ReceptionDashboard({ onLogout }) {
   const [patients, setPatients] = useState(initialPatients);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("view");
   const [searchTerm, setSearchTerm] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showHelperModal, setShowHelperModal] = useState(false);
+  const [selectedPatientForHelper, setSelectedPatientForHelper] =
+    useState(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -103,7 +147,7 @@ function ReceptionDashboard({ onLogout }) {
   const filteredPatients = patients.filter(
     (p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.phone.includes(searchTerm)
+      p.phone.includes(searchTerm),
   );
 
   // Input handler
@@ -111,6 +155,18 @@ function ReceptionDashboard({ onLogout }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
+
+  // Handle assign helper
+  const handleOpenHelperModal = (patient) => {
+    setSelectedPatientForHelper(patient);
+    setShowHelperModal(true);
+  };
+
+  const handleAssignHelper = (helper) => {
+    alert(`${helper.name} assigned to ${selectedPatientForHelper.name}`);
+    setShowHelperModal(false);
+    setSelectedPatientForHelper(null);
   };
 
   const menuItems = [
@@ -265,18 +321,28 @@ function ReceptionDashboard({ onLogout }) {
                       key={patient.id}
                       className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-lg transition-all"
                     >
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                          {patient.name.charAt(0)}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                            {patient.name.charAt(0)}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-gray-800">
+                              {patient.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              {patient.registrationDate}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-gray-800">
-                            {patient.name}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {patient.registrationDate}
-                          </p>
-                        </div>
+                        <button
+                          onClick={() => handleOpenHelperModal(patient)}
+                          className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-blue-200"
+                          title="Assign a helper to this patient"
+                        >
+                          <UserPlus size={16} />
+                          <span className="hidden sm:inline">Assign</span>
+                        </button>
                       </div>
 
                       <div className="space-y-3 border-t border-gray-100 pt-4">
@@ -394,6 +460,99 @@ function ReceptionDashboard({ onLogout }) {
                 className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:shadow-md transition-all font-medium"
               >
                 Register Patient
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Helper Modal */}
+      {showHelperModal && selectedPatientForHelper && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end sm:items-center justify-center p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-xl max-w-2xl w-full p-6 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-gray-800">
+                  Assign Helper
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Select a helper for{" "}
+                  <span className="font-medium">
+                    {selectedPatientForHelper.name}
+                  </span>
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowHelperModal(false);
+                  setSelectedPatientForHelper(null);
+                }}
+                className="text-gray-500 hover:text-gray-700 transition"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {mockHelpers.map((helper) => (
+                <div
+                  key={helper.id}
+                  className={`p-4 border rounded-lg transition-all cursor-pointer ${
+                    helper.status === "available"
+                      ? "border-green-200 bg-green-50 hover:shadow-md hover:border-green-400"
+                      : "border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed"
+                  }`}
+                  onClick={() =>
+                    helper.status === "available" && handleAssignHelper(helper)
+                  }
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {helper.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-800 text-sm">
+                          {helper.name}
+                        </h4>
+                        <p className="text-xs text-gray-600">{helper.phone}</p>
+                      </div>
+                    </div>
+                    {helper.status === "available" && (
+                      <Check
+                        size={20}
+                        className="text-green-600 flex-shrink-0"
+                      />
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-600">
+                      Experience: {helper.experience}
+                    </span>
+                    <span
+                      className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        helper.status === "available"
+                          ? "bg-green-200 text-green-800"
+                          : "bg-yellow-200 text-yellow-800"
+                      }`}
+                    >
+                      {helper.status.charAt(0).toUpperCase() +
+                        helper.status.slice(1)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() => {
+                  setShowHelperModal(false);
+                  setSelectedPatientForHelper(null);
+                }}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Close
               </button>
             </div>
           </div>

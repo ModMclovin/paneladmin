@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { LogIn, Building2 } from "lucide-react";
 
 export default function HospitalLogin() {
@@ -7,7 +8,7 @@ export default function HospitalLogin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   const hospitals = [
     { id: 1, name: "Lumbini City Hospital" },
     { id: 2, name: "Raksha Medical Hall" },
@@ -142,6 +143,18 @@ export default function HospitalLogin() {
                 <LogIn className="w-4 h-4" />
                 {loading ? "Logging in..." : "Login"}
               </button>
+            </div>
+            {/* Register Navigation */}
+            <div className="text-center mt-4">
+              <p className="text-sm text-gray-600">
+                Don’t have a role yet?{" "}
+                <button
+                  onClick={() => navigate("/register")}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline"
+                >
+                  Register here
+                </button>
+              </p>
             </div>
           </div>
         </div>

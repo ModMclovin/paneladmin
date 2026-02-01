@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-import RegisterPage from "./pages/RegisterPage";
+// import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import HospitalAdmin from "./pages/HospitalAdmin";
@@ -28,22 +28,19 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/superlogin" element={<SuperLogin />} />
         <Route path="/login" element={<LoginPage />} />
-
+        <Route path="/register" element={<RegisterPage />} /> --- IGNORE
         <Route
           path="/superadmin"
           element={<HomePage onLogout={handleLogout} />}
         />
-
         <Route path="/hospital" element={<HospitalAdmin />} />
-        <Route path="/superlogin" element={<SuperLogin />} />
-
+        {/* <Route path="/superlogin" element={<SuperLogin />} /> */}
         <Route
           path="/reception"
           element={<Reception onLogout={handleLogout} />}
         />
-
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
