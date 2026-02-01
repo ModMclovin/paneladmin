@@ -221,7 +221,7 @@ try {
 
   const menuItems = [
     { id: "schedules", icon: Calendar, label: "Doctor Schedules" },
-    { id: "dashboard", icon: Home, label: "Dashboard" },
+    { id: "doctor", icon: Home, label: "Doctor" },
     { id: "analytics", icon: BarChart3, label: "Analytics" },
     { id: "profile", icon: User, label: "Profile" },
     { id: "settings", icon: Settings, label: "Settings" },
