@@ -3,9 +3,9 @@ import React from "react";
 import { Home, Users, BarChart3, User, Settings, LogOut, Menu, X } from "lucide-react";
 
 const menuItems = [
-  { id: "home", icon: Home, label: "Dashboard" },
-  { id: "helpers", icon: Users, label: "Helper Details" },
-  { id: "analytics", icon: BarChart3, label: "Analytics" },
+  { id: "home", icon: Home, label: "Helper Requests" },
+  { id: "helpers", icon: Users, label: "Patient Deposit" },
+  { id: "analytics", icon: BarChart3, label: "Helper Revenue" },
   { id: "profile", icon: User, label: "Profile" },
   { id: "settings", icon: Settings, label: "Settings" },
 ];
