@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, Lock } from "lucide-react";
 import axios from "axios";
+import Cookies from "js-cookie"; // 🔹 import js-cookie
 
-const LoginPage = () => {
+const SuperAdminLogin = () => {
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({
     phoneNumber: "",
@@ -13,7 +14,6 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const navigateByRole = (role) => {
-    //debugger;
     switch (role) {
       case "SuperAdmin":
         navigate("/superadmin");
@@ -24,18 +24,6 @@ const LoginPage = () => {
       case "Reception":
         navigate("/reception");
         break;
-      // case "Admin":
-      //   navigate("/admin/dashboard");
-      //   break;
-
-      // case "Helper":
-      //   navigate("/helper/home");
-      //   break;
-
-      // case "User":
-      //   navigate("/user/home");
-      //   break;
-
       default:
         navigate("/unauthorized");
         break;
@@ -52,14 +40,26 @@ const LoginPage = () => {
         {
           phoneNumber: credentials.phoneNumber,
           password: credentials.password,
-        },
+        }
       );
 
       console.log("Login success:", response.data);
 
-      localStorage.setItem("isAdminLoggedIn", "true");
-      console.log("User role:", response.data.data.role);
-      navigateByRole(response.data.data.role);
+      if (response.data.isSuccess) {
+        const { token, role } = response.data.data;
+
+        // 🔹 Save token in cookies
+        Cookies.set("token", token, { expires: 1 }); // 1 day
+        Cookies.set("role", role, { expires: 1 });
+
+        // Optional: localStorage flag
+        localStorage.setItem("isAdminLoggedIn", "true");
+
+        // Navigate
+        navigateByRole(role);
+      } else {
+        setLoginError(response.data.message || "Login failed.");
+      }
     } catch (error) {
       console.error("Login failed:", error);
       setLoginError("Invalid phone number or password.");
@@ -91,23 +91,18 @@ const LoginPage = () => {
           )}
 
           <div className="space-y-4">
+            {/* Phone Number */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Phone Number
               </label>
               <div className="relative">
-                <User
-                  className="absolute left-3 top-3 text-gray-400"
-                  size={18}
-                />
+                <User className="absolute left-3 top-3 text-gray-400" size={18} />
                 <input
                   type="text"
                   value={credentials.phoneNumber}
                   onChange={(e) =>
-                    setCredentials({
-                      ...credentials,
-                      phoneNumber: e.target.value,
-                    })
+                    setCredentials({ ...credentials, phoneNumber: e.target.value })
                   }
                   onKeyPress={(e) => e.key === "Enter" && handleLogin()}
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -116,15 +111,13 @@ const LoginPage = () => {
               </div>
             </div>
 
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock
-                  className="absolute left-3 top-3 text-gray-400"
-                  size={18}
-                />
+                <Lock className="absolute left-3 top-3 text-gray-400" size={18} />
                 <input
                   type="password"
                   value={credentials.password}
@@ -138,6 +131,7 @@ const LoginPage = () => {
               </div>
             </div>
 
+            {/* Login Button */}
             <button
               onClick={handleLogin}
               disabled={loading}
@@ -150,7 +144,7 @@ const LoginPage = () => {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600 mb-2">Not a super admin?</p>
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/otherslogin")}
               className="text-blue-600 hover:underline text-sm font-medium"
             >
               Login as others!{" "}
@@ -162,4 +156,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SuperAdminLogin;

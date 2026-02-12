@@ -5,13 +5,12 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-
-// import RegisterPage from "./pages/RegisterPage";
-import LoginPage from "./pages/LoginPage";
-import HomePage from "./pages/HomePage";
+import LoginOthersPage from "./pages/LoginOthersPage";
+import HomePage from "./pages/Admin/HomePage";
 import HospitalAdmin from "./pages/HospitalAdmin";
 import Reception from "./pages/Reception";
-import SuperLogin from "./pages/SuperLogin";
+import SuperAdminLogin from "./pages/SuperAdminLogin";
+import RegisterPage from "./pages/RegisterPage";
 
 const ProtectedRoute = ({ children }) => {
   const isLoggedIn = localStorage.getItem("isAdminLoggedIn") === "true";
@@ -27,10 +26,13 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/superlogin" element={<SuperLogin />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} /> --- IGNORE
+        <Route path="/" element={<Navigate to="/superAdminlogin" replace />} />
+
+        <Route path="/superAdminlogin" element={<SuperAdminLogin />} />
+        <Route path="/otherslogin" element={<LoginOthersPage />} />
+        <Route path="/registerPage" element={<RegisterPage />} />
+        {/* <Route path="/login" element={<LoginPage />} /> */}
+        {/* <Route path="/register" element={<RegisterPage />} /> --- IGNORE */}
         <Route
           path="/superadmin"
           element={<HomePage onLogout={handleLogout} />}

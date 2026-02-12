@@ -13,9 +13,16 @@ const RegisterPage = () => {
     confirmPassword: "",
     role: "helper",
   });
+   const [selectedHospital, setSelectedHospital] = useState("");
   const [setRegistered] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const hospitals = [
+    { id: 1, name: "Lumbini City Hospital" },
+    { id: 2, name: "Raksha Medical Hall" },
+    { id: 3, name: "Lumbini Province Hospital" },
+    { id: 4, name: "Butwal Hospital" },
+  ];
 
   const API_BASE =
     "https://localhost:7252/registerUser/SpecifiedRole";
@@ -118,6 +125,24 @@ const RegisterPage = () => {
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Hospital
+                </label>
+                <select
+                  value={selectedHospital}
+                  onChange={(e) => setSelectedHospital(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition appearance-none bg-white cursor-pointer"
+                >
+                  <option value="">-- Choose a Hospital --</option>
+                  {hospitals.map((hospital) => (
+                    <option key={hospital.id} value={hospital.id}>
+                      {hospital.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
