@@ -9,7 +9,7 @@ const Navbar = ({ toggleSidebar }) => {
         <button onClick={toggleSidebar} className="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
           <Menu size={24} />
         </button>
-        <h1 className="text-xl font-bold">Admin Dashboard</h1>
+        <h1 className="text-xl font-bold">Super Admin Dashboard</h1>
       </div>
     </nav>
   );

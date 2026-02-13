@@ -1,56 +1,18 @@
 // HomePage.js
 import React, { useState, useEffect, useCallback } from "react";
-import Sidebar from "./SideBar";
-import Navbar from "./Navbar";
-import StatsCards from "./StatsCards";
-import FilterBar from "./FilterBar";
-import HelpersList from "./HelperList";
-import HelperModal from "./HelperModal";
-//import { fetchAPI } from ".../utils/api";
+import Sidebar from "../../components/Admin/SideBar";
+import Navbar from "../../components/Admin/Navbar";
+import StatsCards from "../../components/Admin/StatsCards";
+import FilterBar from "../../components/Admin/FilterBar";
+import HelpersList from "../../components/Admin/HelperList";
+import HelperModal from "../../components/Admin/HelperModal";
+import PatientDepositsPage from './PatientDepositPage';
+import HospitalsPage from './HospitalPage';
+import { fetchAPI } from '../../api/fetchApi';
 
 const pageSize = 10;
 // utils/api.js
-const API_BASE_URL = "https://localhost:7252";
 
-// Helper to get token from cookies
-export const getTokenFromCookies = () => {
-  const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
-  if (match) return match[2];
-  return null;
-};
-
-/**
- * Generic API fetch wrapper
- * @param {string} endpoint - API endpoint starting with "/"
- * @param {string} method - HTTP method: GET, POST, PUT, DELETE
- * @param {Object|null} body - Request body if POST/PUT
- * @returns {Promise<any>} - JSON response
- */
-export const fetchAPI = async (endpoint, method = "GET", body = null) => {
-  const token = getTokenFromCookies();
-
-  const options = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-  };
-
-  if (body) {
-    options.body = JSON.stringify(body);
-  }
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`API Error: ${response.status} ${response.statusText} - ${text}`);
-  }
-
-  return await response.json();
-};
 
 const HomePage = ({ onLogout }) => {
   const [helpers, setHelpers] = useState([]);
@@ -60,6 +22,7 @@ const HomePage = ({ onLogout }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("home");
 
   const loadHelpers = useCallback(async () => {
     setLoading(true);
@@ -139,63 +102,87 @@ const HomePage = ({ onLogout }) => {
 
   const totalPages = Math.ceil(totalRecords / pageSize);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <Sidebar
-        open={sidebarOpen}
-        setOpen={setSidebarOpen}
-        activeTab="home"
-        onLogout={onLogout}
-      />
+return (
+  <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    
+    <Sidebar
+      open={sidebarOpen}
+      setOpen={setSidebarOpen}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      onLogout={onLogout}
+    />
 
-      <div className="lg:ml-64">
-        <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <div className="p-4 md:p-8">
-          <StatsCards stats={stats} />
-          <FilterBar filter={filter} setFilter={setFilter} setCurrentPage={setCurrentPage} />
+    <div className="lg:ml-64">
+      <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-          <HelpersList
-            helpers={helpers}
-            loading={loading}
-            selectedHelper={selectedHelper}
-            setSelectedHelper={setSelectedHelper}
-            onStatusChange={handleStatusChange}
-          />
+      <div className="p-4 md:p-8">
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-3 mt-4">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700"
-              >
-                Previous
-              </button>
-              <span className="text-gray-700 font-semibold">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </div>
+        {activeTab === "home" && (
+          <>
+            <StatsCards stats={stats} />
+
+            <FilterBar
+              filter={filter}
+              setFilter={setFilter}
+              setCurrentPage={setCurrentPage}
+            />
+
+            <HelpersList
+              helpers={helpers}
+              loading={loading}
+              selectedHelper={selectedHelper}
+              setSelectedHelper={setSelectedHelper}
+              onStatusChange={handleStatusChange}
+            />
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-3 mt-4">
+                <button
+                  onClick={() =>
+                    setCurrentPage(Math.max(1, currentPage - 1))
+                  }
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700"
+                >
+                  Previous
+                </button>
+
+                <span className="text-gray-700 font-semibold">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-50 hover:bg-blue-700"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {activeTab === "deposits" && <PatientDepositsPage />}
+        {activeTab === "hospitals" && <HospitalsPage />}
+
       </div>
-
-      {selectedHelper && (
-        <HelperModal
-          helper={selectedHelper}
-          onClose={() => setSelectedHelper(null)}
-          onStatusChange={handleStatusChange}
-        />
-      )}
     </div>
-  );
-};
+
+    {selectedHelper && (
+      <HelperModal
+        helper={selectedHelper}
+        onClose={() => setSelectedHelper(null)}
+        onStatusChange={handleStatusChange}
+      />
+    )}
+  </div>
+);
+}
+
 
 export default HomePage;
