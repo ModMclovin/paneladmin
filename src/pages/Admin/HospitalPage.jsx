@@ -6,7 +6,7 @@ const HospitalPage = () => {
   const [hospitals, setHospitals] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cityOptions, setCityOptions] = useState([]);
-
+  const [errors, setErrors] = React.useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -73,10 +73,40 @@ const HospitalPage = () => {
 
   console.log("Filtered Hospitals:", filteredHospitals);
 
-  /* ------------------ ADD ------------------ */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  
 
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const newErrors = {};
+
+  // Name validation
+  if (!formData.Name) newErrors.Name = "Name is required";
+
+  // Phone validation
+  if (!formData.Phone) newErrors.Phone = "Phone is required";
+
+  // Email validation
+  if (!formData.Email) newErrors.Email = "Email is required";
+  else if (!/\S+@\S+\.\S+/.test(formData.Email))
+    newErrors.Email = "Email is invalid";
+
+  // WardNo validation
+  if (!formData.WardNo) newErrors.WardNo = "Ward number is required";
+  else if (Number(formData.WardNo) <= 0)
+    newErrors.WardNo = "Ward number must be positive";
+
+  // ToleName validation
+  if (!formData.ToleName) newErrors.ToleName = "Tole name is required";
+
+  // City validation
+  if (!formData.City) newErrors.City = "City is required";
+
+  setErrors(newErrors);
+
+  // If no errors, proceed
+  if (Object.keys(newErrors).length === 0) {
+  
+    
     await fetchAPI("/addHospital", "POST", {
       Name: formData.Name.trim(),
       Phone: formData.Phone.trim(),
@@ -97,6 +127,7 @@ const HospitalPage = () => {
     });
 
     loadHospitals();
+  }
   };
 
   /* ------------------ LOADING ------------------ */
@@ -209,62 +240,140 @@ const HospitalPage = () => {
       )}
 
       {/* ------------------ MODAL ------------------ */}
-      {showModal && (
-        <div
-          className="fixed inset-0 bg-black/40 flex justify-center items-center"
-          onClick={() => setShowModal(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl p-6 w-full max-w-md"
-          >
-            <h3 className="font-bold text-lg mb-4">Add Hospital</h3>
-
-            <form className="space-y-3" onSubmit={handleSubmit}>
-              {["Name", "Phone", "Email", "WardNo", "ToleName"].map((f) => (
-                <input
-                  key={f}
-                  type={f === "Email" ? "email" : f === "WardNo" ? "number" : "text"}
-                  placeholder={f}
-                  value={formData[f]}
-                  onChange={(e) => setFormData({ ...formData, [f]: e.target.value })}
-                  className="w-full border px-3 py-2 rounded"
-                />
-              ))}
-
-              <select
-                value={formData.City}
-                onChange={(e) => setFormData({ ...formData, City: e.target.value })}
-                className="w-full border px-3 py-2 rounded"
-              >
-                <option value="">Select City</option>
-                {cityOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-
-              <div className="flex justify-end gap-2 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-3 py-1.5 bg-gray-300 rounded"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-3 py-1.5 bg-blue-600 text-white rounded"
-                >
-                  Add
-                </button>
-              </div>
-            </form>
-          </div>
+    {/* ------------------ MODAL ------------------ */}
+{showModal && (
+  <div
+    className="fixed inset-0 bg-black/40 flex justify-center items-center z-50"
+    onClick={() => setShowModal(false)}
+  >
+    <div
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        background: "#fff", borderRadius: "14px", padding: "20px 24px",
+        width: "100%", maxWidth: "420px", boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+        fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+      }}
+    >
+      {/* Header */}
+      <div style={{ marginBottom: "16px" }}>
+        <div style={{ fontSize: "15px", fontWeight: 700, color: "#111827" }}>Add Hospital</div>
+        <div style={{ fontSize: "11px", color: "#9ca3af", marginTop: "2px" }}>
+          Fill in the details to register a new hospital
         </div>
-      )}
+      </div>
+
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+
+        {/* Field renderer */}
+        {[
+          { key: "Name",     label: "Hospital Name", type: "text"   },
+          { key: "Phone",    label: "Phone Number",  type: "text"   },
+          { key: "Email",    label: "Email Address", type: "email"  },
+          { key: "WardNo",   label: "Ward Number",   type: "number" },
+          { key: "ToleName", label: "Tole Name",     type: "text"   },
+        ].map(({ key, label, type }) => (
+          <div key={key}>
+            <input
+              type={type}
+              placeholder={label}
+              value={formData[key]}
+              onChange={(e) => {
+                setFormData({ ...formData, [key]: e.target.value });
+                if (errors[key]) setErrors({ ...errors, [key]: "" });
+              }}
+              style={{
+                width: "100%", height: "34px",
+                padding: "0 10px", fontSize: "12.5px",
+                border: `1px solid ${errors[key] ? "#fca5a5" : "#e5e7eb"}`,
+                borderRadius: "8px", outline: "none",
+                background: errors[key] ? "#fff7f7" : "#fafafa",
+                color: "#111827", boxSizing: "border-box",
+                fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+                transition: "border-color 0.15s",
+              }}
+              onFocus={e => e.target.style.borderColor = errors[key] ? "#ef4444" : "#3b82f6"}
+              onBlur={e  => e.target.style.borderColor = errors[key] ? "#fca5a5" : "#e5e7eb"}
+            />
+            {errors[key] && (
+              <div style={{
+                fontSize: "10.5px", color: "#ef4444", marginTop: "2px",
+                paddingLeft: "2px", fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+              }}>
+                {errors[key]}
+              </div>
+            )}
+          </div>
+        ))}
+
+        {/* City dropdown */}
+        <div>
+          <select
+            value={formData.City}
+            onChange={(e) => {
+              setFormData({ ...formData, City: e.target.value });
+              if (errors.City) setErrors({ ...errors, City: "" });
+            }}
+            style={{
+              width: "100%", height: "34px",
+              padding: "0 10px", fontSize: "12.5px",
+              border: `1px solid ${errors.City ? "#fca5a5" : "#e5e7eb"}`,
+              borderRadius: "8px", outline: "none",
+              background: errors.City ? "#fff7f7" : "#fafafa",
+              color: formData.City ? "#111827" : "#9ca3af",
+              boxSizing: "border-box",
+              fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+            }}
+          >
+            <option value="">Select City</option>
+            {cityOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          {errors.City && (
+            <div style={{
+              fontSize: "10.5px", color: "#ef4444", marginTop: "2px",
+              paddingLeft: "2px", fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+            }}>
+              {errors.City}
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "6px" }}>
+          <button
+            type="button"
+            onClick={() => { setShowModal(false); setErrors({}); }}
+            style={{
+              height: "32px", padding: "0 14px", borderRadius: "8px",
+              border: "1px solid #e5e7eb", background: "#f9fafb",
+              fontSize: "12px", fontWeight: 500, color: "#6b7280",
+              cursor: "pointer", fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#f3f4f6"}
+            onMouseLeave={e => e.currentTarget.style.background = "#f9fafb"}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            style={{
+              height: "32px", padding: "0 18px", borderRadius: "8px",
+              border: "none", background: "#2563eb",
+              fontSize: "12px", fontWeight: 600, color: "#fff",
+              cursor: "pointer", fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#1d4ed8"}
+            onMouseLeave={e => e.currentTarget.style.background = "#2563eb"}
+          >
+            Add Hospital
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
     </div>
   );
 };
