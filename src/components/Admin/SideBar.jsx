@@ -1,15 +1,13 @@
 // Sidebar.js
 import React from "react";
-import { Home, Users, BarChart3, User, Settings, LogOut } from "lucide-react";
+import { Home,CreditCard, HospitalIcon,IndianRupeeIcon,Users, BarChart3,LayoutDashboardIcon, User, Settings, LogOut } from "lucide-react";
 
 const menuItems = [
-   { id: "dashboard", icon: Home, label: "Dashboard" },
-  { id: "home", icon: Home, label: "Helper Requests" },
- 
-  { id: "deposits", icon: Users, label: "Patient Deposit" },
-  { id: "helperRevenue", icon: BarChart3, label: "Helper Revenue" },
-  { id: "hospitals", icon: User, label: "Hospitals" },
-  { id: "settings", icon: Settings, label: "Settings" },
+  { id: "dashboard", icon: LayoutDashboardIcon, label: "Dashboard" },
+  { id: "home", icon: Users, label: "Helper Requests" },
+  { id: "deposits", icon: CreditCard, label: "Patient Deposit" },
+  { id: "helperRevenue", icon: IndianRupeeIcon, label: "Helper Revenue" },
+  { id: "hospitals", icon: HospitalIcon, label: "Hospitals" },
 ];
 
 const Sidebar = ({ open, setOpen, activeTab, setActiveTab, onLogout }) => {
