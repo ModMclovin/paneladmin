@@ -68,7 +68,7 @@ const LoginOthersPage = () => {
 
     try {
       const response = await fetch(
-        "https://localhost:7252/SignInUser/SpecifiedRole",
+        "http://192.168.18.221:5237/SignInUser/SpecifiedRole",
         {
           method: "POST",
           headers: {

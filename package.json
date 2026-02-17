@@ -10,7 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@google/genai": "^1.31.0",
+    "@mui/material": "^7.3.8",
+    "@mui/x-data-grid": "^8.27.1",
     "axios": "^1.13.2",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.553.0",

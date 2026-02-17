@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://localhost:7252";
+const API_BASE_URL = "http://192.168.18.221:5237";
 
 // Helper to get token from cookies
 export const getTokenFromCookies = () => {

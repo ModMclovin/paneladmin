@@ -43,7 +43,7 @@ function App() {
           path="/reception"
           element={<Reception onLogout={handleLogout} />}
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/superAdminlogin" replace />} />
       </Routes>
     </Router>
   );

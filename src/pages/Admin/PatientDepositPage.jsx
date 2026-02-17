@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { fetchAPI } from "../../api/fetchApi";
-import DepositCard from "../../components/Admin/DepositCard";
+import DepositGrid from "../../components/Admin/DepositGrid";
 
 const PatientDepositsPage = () => {
   const [deposits, setDeposits] = useState([]);
@@ -26,7 +26,6 @@ const PatientDepositsPage = () => {
     loadDeposits();
   }, []);
 
-  // ✅ Filter Logic
   const filteredDeposits = useMemo(() => {
     return deposits.filter((deposit) => {
       const hospitalMatch = deposit.hospitalName
@@ -42,77 +41,68 @@ const PatientDepositsPage = () => {
   }, [deposits, searchHospital, searchPatient]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
 
       {/* 🔎 Filter Section */}
-      <div className="bg-white p-5 rounded-xl shadow-md">
-        <div className="flex flex-col md:flex-row gap-4">
-
-          {/* Hospital Filter */}
-          <div className="flex-1">
-            <label className="block text-sm font-semibold text-gray-600 mb-1">
-              Search by Hospital
-            </label>
-            <input
-              type="text"
-              value={searchHospital}
-              onChange={(e) => setSearchHospital(e.target.value)}
-              placeholder="Enter hospital name..."
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-
-          {/* Patient Filter */}
-          <div className="flex-1">
-            <label className="block text-sm font-semibold text-gray-600 mb-1">
-              Search by Patient
-            </label>
-            <input
-              type="text"
-              value={searchPatient}
-              onChange={(e) => setSearchPatient(e.target.value)}
-              placeholder="Enter patient name..."
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-
-          {/* Clear Button */}
-          <div className="flex items-end">
-            <button
-              onClick={() => {
-                setSearchHospital("");
-                setSearchPatient("");
-              }}
-              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium"
-            >
-              Clear
-            </button>
-          </div>
+      <div className="bg-white p-3 rounded-lg shadow-sm flex flex-wrap items-end gap-2">
+        <div className="w-36">
+          <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+            Hospital
+          </label>
+          <input
+            type="text"
+            value={searchHospital}
+            onChange={(e) => setSearchHospital(e.target.value)}
+            placeholder="Hospital..."
+            className="w-full px-2 py-1 text-xs border rounded-md focus:ring-1 focus:ring-blue-500 outline-none"
+          />
         </div>
+
+        <div className="w-36">
+          <label className="block text-[10px] font-semibold text-gray-600 mb-1">
+            Patient
+          </label>
+          <input
+            type="text"
+            value={searchPatient}
+            onChange={(e) => setSearchPatient(e.target.value)}
+            placeholder="Patient..."
+            className="w-full px-2 py-1 text-xs border rounded-md focus:ring-1 focus:ring-blue-500 outline-none"
+          />
+        </div>
+
+        <button
+          onClick={() => {
+            setSearchHospital("");
+            setSearchPatient("");
+          }}
+          className="px-2 py-1 text-xs bg-gray-200 hover:bg-gray-300 rounded-md"
+        >
+          Clear
+        </button>
       </div>
 
-      {/* 🔄 Loading State */}
+      {/* 🔄 Loading */}
       {loading && (
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
         </div>
       )}
 
-      {/* ❌ Empty State */}
+      {/* ❌ Empty */}
       {!loading && filteredDeposits.length === 0 && (
         <div className="text-center py-12 text-gray-500">
           No deposit records found
         </div>
       )}
 
-      {/* ✅ Deposit Cards */}
+      {/* ✅ DataGrid Table */}
       {!loading && filteredDeposits.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredDeposits.map((deposit, index) => (
-            <DepositCard key={index} deposit={deposit} />
-          ))}
+        <div className="border rounded-lg">
+          <DepositGrid deposits={filteredDeposits} />
         </div>
       )}
+
     </div>
   );
 };

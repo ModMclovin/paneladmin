@@ -36,7 +36,7 @@ const SuperAdminLogin = () => {
 
     try {
       const response = await axios.post(
-        "https://localhost:7252/SignInUser/SpecifiedRole",
+        "http://192.168.18.221:5237/SignInUser/SpecifiedRole",
         {
           phoneNumber: credentials.phoneNumber,
           password: credentials.password,
@@ -73,15 +73,17 @@ const SuperAdminLogin = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-              <User className="text-white" size={32} />
+            <div className="w-26 h-26rounded-lg flex items-center justify-center mx-auto mb-4">
+              <img
+        src="src\images\JeevanCare.png"   // <-- your image path
+      
+        className="w-20 h-20 object-contain"
+      />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl text-blue-600 font-bold ">
               Super Admin Login
             </h2>
-            <p className="text-gray-600 text-sm mt-1">
-              Hospital Helper Management
-            </p>
+           
           </div>
 
           {loginError && (

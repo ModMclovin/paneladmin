@@ -25,7 +25,7 @@ const RegisterPage = () => {
   ];
 
   const API_BASE =
-    "https://localhost:7252/registerUser/SpecifiedRole";
+    "http://192.168.18.221:5237/registerUser/SpecifiedRole";
 
   const handleRegister = async () => {
     // Validation
