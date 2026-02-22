@@ -25,7 +25,7 @@ const HospitalPage = () => {
   const loadHospitals = async () => {
     setLoading(true);
     try {
-      const response = await fetchAPI("/getAllHospitalByAdmin");
+      const response = await fetchAPI("/Admin/getAllHospitalByAdmin");
       const data = response?.data ?? [];
 
       const mapped = data.map((r) => ({
@@ -107,7 +107,7 @@ const handleSubmit = async (e) => {
   if (Object.keys(newErrors).length === 0) {
   
     
-    await fetchAPI("/addHospital", "POST", {
+    await fetchAPI("/Admin/addHospital", "POST", {
       Name: formData.Name.trim(),
       Phone: formData.Phone.trim(),
       Email: formData.Email.trim(),

@@ -61,9 +61,9 @@ const HomePage = ({ onLogout }) => {
       const statusMap = { all: null, pending: "Pending", approved: "Approved", rejected: "Rejected" };
       let response;
       if (filter === "all") {
-        response = await fetchAPI(`/getAllHelperProfile?pageNumber=${currentPage}&pageSize=${pageSize}`);
+        response = await fetchAPI(`/HelperProfile/getAllHelperProfile?pageNumber=${currentPage}&pageSize=${pageSize}`);
       } else {
-        response = await fetchAPI(`/getHelperProfileByStatus?status=${statusMap[filter]}&pageNumber=${currentPage}&pageSize=${pageSize}`);
+        response = await fetchAPI(`/HelperProfile/getHelperProfileByStatus?status=${statusMap[filter]}&pageNumber=${currentPage}&pageSize=${pageSize}`);
       }
       const helpersData = response?.data?.items ?? [];
       setHelpers(helpersData.map((h, i) => ({
@@ -85,7 +85,7 @@ const HomePage = ({ onLogout }) => {
 
   const handleStatusChange = async (helper, status) => {
     try {
-      await fetchAPI("/updateHelperProfileStatus", "POST", {
+      await fetchAPI("/Admin/updateHelperProfileStatus", "POST", {
         userName: helper?.name,
         phoneNumber: helper?.phoneNumber,
         updatedStatus: status,

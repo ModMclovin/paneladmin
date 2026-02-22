@@ -15,7 +15,7 @@ const HelperRevenuePage = () => {
     setLoading(true);
     try {
         debugger;
-      const response = await fetchAPI("/getAllHelperRevenue");
+      const response = await fetchAPI("/Admin/getAllHelperRevenue");
       setRevenues(response?.data ?? response ?? []);
     } catch (error) {
       console.error("Error loading helper revenue:", error);

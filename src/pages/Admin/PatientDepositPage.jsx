@@ -12,7 +12,7 @@ const PatientDepositsPage = () => {
   const loadDeposits = async () => {
     setLoading(true);
     try {
-      const response = await fetchAPI("/getPatientsDeposit");
+      const response = await fetchAPI("/Admin/getPatientsDeposit");
       setDeposits(response?.data ?? response ?? []);
     } catch (error) {
       console.error("Error loading deposits:", error);

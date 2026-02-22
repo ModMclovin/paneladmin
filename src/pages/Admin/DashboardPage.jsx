@@ -272,9 +272,9 @@ export default function DashboardPage() {
     const loadAll = async () => {
       try {
         const [h, r, b] = await Promise.all([
-          fetchAPI("/getHelperStatistics"),
-          fetchAPI("/getHelperRevenueStatistics"),
-          fetchAPI("/getBookingStatistics"),
+          fetchAPI("/Admin/getHelperStatistics"),
+          fetchAPI("/Admin/getHelperRevenueStatistics"),
+          fetchAPI("/Admin/getBookingStatistics"),
         ]);
         const hd = h?.data ?? {};
         setHelperStats({

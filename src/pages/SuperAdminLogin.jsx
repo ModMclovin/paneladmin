@@ -279,7 +279,7 @@ const SuperAdminLogin = () => {
     if (!credentials.password.trim())    return setLoginError("Password is required.");
     setLoading(true);
     try {
-      const response = await axios.post("http://192.168.18.221:5237/SignInUser/SpecifiedRole", {
+      const response = await axios.post("http://192.168.18.221:5237/api/Auth/SignInUser/SpecifiedRole", {
         phoneNumber: credentials.phoneNumber,
         password: credentials.password,
       });
@@ -380,12 +380,12 @@ const SuperAdminLogin = () => {
           </button>
 
           {/* Footer */}
-          <div className="sa-footer">
+          {/* <div className="sa-footer">
             <p className="sa-footer-text">Not a super admin?</p>
             <button className="sa-footer-btn" onClick={() => navigate("/otherslogin")}>
               Sign in as staff →
             </button>
-          </div>
+          </div> */}
 
         </div>
       </div>
